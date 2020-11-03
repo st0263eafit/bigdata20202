@@ -20,7 +20,8 @@ Con el usuario/password de la VPN:
 
 con el user/pass de la VPN
 
-        (local)$ ssh user-vpn@192.168.10.116
+* POR TERMINAL (ojo por el puerto 2222)
+        (local)$ ssh user-vpn@192.168.10.116 -p 2222
 
 ## 2. GESTIÓN DE ARCHIVOS EN HDFS VÍA TERMINAL
 
