@@ -1,4 +1,4 @@
-export HADOOP_STREAMING_HOME=/usr/hdp/current/hadoop-mapreduce/
+export HADOOP_STREAMING_HOME=/usr/hdp/current/hadoop-mapreduce-client/
 
 hdfs dfs -rm -r /tmp/wc-out1
 

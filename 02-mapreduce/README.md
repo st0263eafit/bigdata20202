@@ -86,7 +86,7 @@ primero instalar pyenv (https://github.com/pyenv/pyenv-installer)
 
 Crear variable de ambiente: HADOOP_STREAMING_HOME para HORTONWORKS:
 
->   user@master$ export HADOOP_STREAMING_HOME=/usr/hdp/current/hadoop-mapreduce/
+>   user@master$ export HADOOP_STREAMING_HOME=/usr/hdp/current/hadoop-mapreduce-client/
 
 Crear variable de ambiente: HADOOP_STREAMING_HOME para CLOUDERA CDH 5.14:
 
