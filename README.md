@@ -15,7 +15,9 @@ Con el usuario/password de la VPN:
 
 * Ambari Web: http://192.168.10.116:8080
 
-* Jupyter Notebooks: http://192.168.10.116:8889
+* Jupyter Notebooks: http://192.168.10.116:8889 (con username asi: <username> y password de la vpn)
+
+* Zeppelin Notebooks: http://192.168.10.116:9995 (con username asi: <username@dis.eafit.edu.co> y password de la vpn)
 
 ## DATASETS
 
@@ -39,9 +41,45 @@ Copiar todos los archivos del [datasets](datasets) tanto en S3 (permanente) y en
 
 * ver: [HDFS](01-hdfs)
 
-## 3. Bases de datos Hive y motor de transferencia de datos Sqoop
+Se comprabará con los datos en S3 y en el HDFS del DCA
 
-Este laboratorio lo debe realizar en Amazon EMR.
+## 3. Aprende MapReduce con MRJOB.
+
+* Realiza los ejemplos del contador de palabras en mrjob.
+
+* Realiza al menos un problema solucionado en mrjob de [problemas-map-reduce](02-mapreduce/lab-mrjob.md)
+
+## 4. Labs y ejercicios de PySpark
+
+1. crear cluster EMR con Notebooks
+
+2. Crear notebook en EMR para ejecutar el wordcound con datos de gutenberg
+
+3. Entrar al cluster HDP del DCA, entrar en zeppelin, y ejecutar el wordcound con datos de gutenberg
+
+4. Ejecutar el notebook del github Data_processing_using_PySpark.ipynb
+
+ejecutarlo (tanto en EMR como en el DCA) y entenderlo 
+
+5. Hacer análisis exploratorio con los datos del covid19 que hay en el github (actualice los datos con nuevos del ins.gov.co)
+
+. cargar datos
+
+. explorar metadatos
+
+. borrar y adicionar columnas
+
+. corrección de datos
+
+. transformación de datos
+
+. estadísticas descriptivas básicas: groupby, orderby,count, max, min, avg.
+
+. opcionalmente: gráfique datos con librerias como matplotlib
+
+## 5. Bases de datos Hive y motor de transferencia de datos Sqoop
+
+Este laboratorio lo puede realizar en Amazon EMR o en el DCA
 
 tiene 2 partes:
 
@@ -56,4 +94,4 @@ parte2:
 * seguir las instrucciones del [case_retail.sql](../03-hive-sqoop/case_retail.sql)
 * Ver la presentación de clase donde esta la descripción del caso
 
-ver: [HIVE-SQOOP](03-hive-sqoop)
+ver: [HIVE-SQOOP](04-hive-sqoop)
