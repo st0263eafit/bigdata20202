@@ -8,32 +8,73 @@
 
 -- datos de conexión:
 
-Mysql
+Mysql en Amazon
 host: 34.236.231.151
 Database: retail_db
 Username: retail_dba
 Password: retail_dba
 
+Mysql en el DCA
+host: 192.168.10.116
+Database: retail_db
+Username: retail_dba
+Password: retail_dba
+
+-- crear la base de datos retail_db
+
+por beeline o por interfaz web (HUE:8888 o DSA:30800):
+
+    DROP DATABASE IF EXISTS username_retail_db CASCADE;
+    CREATE DATABASE IF NOT EXISTS username_retail_db;
+
+
+
+# conectarse al nodo master:
+## si es en AWS EMR, en la consola de administración aparece el archivo clave y el hostname
+# si es en AWS EMR con el usuario 'hadoop', usuario por defecto
+#
+## si es en el DCA:
+###     $ ssh username@192.168.10.116 -p 2222     (conectandose previamente a la VPN)
+## si es en el DCA, utilice el usuario 'hive' password 'hive':
+##                              $ su - hive
+##                              password: hive
+
+
 -- importar datos via sqoop por Terminal:
 
-$ sqoop import-all-tables --connect jdbc:mysql://34.236.231.151:3306/retail_db --username=retail_dba -P --hive-database retail_db --hive-overwrite --hive-import --warehouse-dir=/tmp/retail_dbtmp -m 1 --mysql-delimiters
+$ hdfs dfs -rm -R /tmp/username_retail_db/*
 
--- importar datos via sqoop por HUE:
+# una solo linea:
+$ sqoop import-all-tables --connect jdbc:mysql://192.168.10.116:3306/retail_db --username=retail_dba --password retail_dba --hive-database username_retail_db --create-hive-table --hive-import  --hive-overwrite --warehouse-dir=/tmp/username_retail_db -m 1 --mysql-delimiters
 
-import-all-tables --connect jdbc:mysql://34.236.231.151:3306/retail_db --username=retail_dba -P --hive-database retail_db --hive-overwrite --hive-import --warehouse-dir=/tmp/retail_dbtmp -m 1 --mysql-delimiters
+$ sqoop import-all-tables --connect jdbc:mysql://192.168.10.116:3306/retail_db \
+    --username=retail_dba \
+    --password retail_dba \
+    --hive-database username_retail_db \
+    --create-hive-table \
+    --hive-import \
+    --hive-overwrite \
+    --warehouse-dir=/tmp/username_retail_db \
+    -m 1 --mysql-delimiters
 
--- CATEGORIAS MÁS POPULARES DE PRODUCTOS
+-- importar datos via sqoop por HUE (NO COLOCA LA PALABRA 'sqoop') - via web no corre en el DCA.
 
+import-all-tables --connect jdbc:mysql://192.168.10.116:3306/retail_db --username=retail_dba --password retail_dba --hive-database username_retail_db --create-hive-table --hive-import --hive-overwrite --warehouse-dir=/tmp/username_retail_db -m 1 --mysql-delimiters
+
+-- CATEGORIAS MÁS POPULARES DE PRODUCTOS (via HUE o DSA)
+
+USE username_retail_db;
 SELECT c.category_name, count(order_item_quantity) as count
 FROM order_items oi
 inner join products p on oi.order_item_product_id = p.product_id
 inner join categories c on c.category_id = p.product_category_id
 group by c.category_name
 order by count desc
-limit 10
+limit 10;
 
 -- top 10 de productos que generan ganancias
 
+USE username_retail_db;
 SELECT p.product_id, p.product_name, r.revenue
 FROM products p inner join
 (select oi.order_item_product_id, sum(cast(oi.order_item_subtotal as float)) as revenue
@@ -47,9 +88,9 @@ order by r.revenue desc
 limit 10
 
 -- SUBIR LOS LOGS AL HDFS:
-$ hdfs dfs -put datasets/retail_logs/access.log /user/username/datasets/retail_logs/
+$ hdfs dfs -put $HOME/datasets/retail_logs/access.log /user/username/datasets/retail_logs/
 
-USE username;
+USE username_retail_db;
 CREATE EXTERNAL TABLE tmp_access_logs (
         ip STRING,
         fecha STRING,
@@ -70,6 +111,7 @@ CREATE EXTERNAL TABLE tmp_access_logs (
 
 $ hdfs dfs -mkdir /user/username/warehouse/access_logs_etl
 
+USE username_retail_db;
 CREATE EXTERNAL TABLE etl_access_logs (
         ip STRING,
         fecha STRING,
