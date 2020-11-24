@@ -179,7 +179,9 @@ Enter password: ******
 mysql> use retail_db;
 mysql> show tables;
 
-
+# EN EL DCA, EJECUTE TODOS LOS COMANDOS DE SQOOP CON EL USUARIO 'hive' password 'hive':
+# $ su - hive
+# password: hive
 
 ```
 ## comandos Sqoop desde Hue
@@ -191,58 +193,62 @@ todos los comandos no incluye 'sqoop'
 import --connect jdbc:mysql://34.236.231.151:3306/cursodb 
 --username curso --password ***** 
 --table employee 
---target-dir /user/username/mysqlOut -m 1
+--target-dir /user/username/employee -m 1
 
 ## Comandos Sqoop desde CLI
 
-### ejecute el comando beeline desde el nodo master del cluster EMR o de hadoop (DCA):
+### ejecute el comando sqoop desde el nodo master del cluster EMR o de hadoop (DCA):
 
-$ beeline
+//Transferir UNA TABLA de una base de datos (tipo mysql) hacia HDFS:
+```
+$ hdfs dfs -rm -R /user/username/employee
+$ sqoop import --connect jdbc:mysql://34.236.231.151:3306/cursodb --username curso --password curso --table employee --target-dir /user/username/employee -m 1
+$ hdfs dfs -ls /user/username/employee
+$ hdfs dfs -cat /user/username/employee/part-m-00000
+```
 
-//Transferir datos de una base de datos (tipo mysql) hacia HDFS:
+//Transferir TODAS LAS TABLA de una base de datos (tipo mysql) hacia HDFS:
 ```
-$ sqoop import --connect jdbc:mysql://34.236.231.151:3306/cursodb --username curso -P --table employee --target-dir /user/username/mysqlOut -m 1
-```
-
-// listar archivos:
-```
-$ hdfs dfs -ls /user/username/mysqlOut
+$ hdfs dfs -rm -R /user/username/cursodb
+$ sqoop import-all-tables --connect jdbc:mysql://34.236.231.151:3306/cursodb --username curso --password curso --warehouse-dir /user/username/cursodb -m 1
+$ hdfs dfs -ls -R /user/username/cursodb
+$ hdfs dfs -cat /user/username/cursodb/employee/part-m-00000
 ```
 
 // Crear tabla HIVE a partir de definición tabla Mysql:
 ```
-$ sqoop create-hive-table --connect jdbc:mysql://34.236.231.151:3306/cursodb --username curso -P --table employee --hive-database mydbhive --hive-table employee -m 1--mysql-delimiters
+$ sqoop create-hive-table --connect jdbc:mysql://34.236.231.151:3306/cursodb --username curso --password curso --table employee --hive-database username_cursodb --hive-table employee
 ```
 
-// Transferir datos de una base de datos (tipo mysql) hacia HIVE vía HDFS:
+// Transferir UNA TABLA de una base de datos (tipo mysql) hacia HIVE vía HDFS:
 
 ```
-$ sqoop import --connect jdbc:mysql://34.236.231.151:3306/cursodb --username curso -P --table employee --hive-import --hive-database mydbhive --hive-table employee -m 1 --mysql-delimiters
+$ sqoop import --connect jdbc:mysql://34.236.231.151:3306/cursodb --username curso --password curso --table employee --hive-database username_cursodb --hive-import  --hive-table employee --hive-overwrite -m 1
 ```
 
-// Transferir todas las tablas de una base de datos (tipo mysql) hacia HIVE vía HDFS:
+// Transferir TODAS LAS TABLAS de una base de datos (tipo mysql) hacia HIVE:
 
 ```
-sqoop import-all-tables --connect jdbc:mysql://34.236.231.151:3306/retail_db --username=retail_dba --password=retail_dba --warehouse-dir /tmp/mysqlOut1 --mysql-delimiters -m 1
+PRIMERA VEZ:
 
-sqoop import-all-tables --connect jdbc:mysql://34.236.231.151:3306/retail_db --username=retail_dba --password=retail_dba --warehouse-dir=/tmp/mysqlOut1 --hive-import --mysql-delimiters -m 1 
+$ sqoop import-all-tables --connect jdbc:mysql://34.236.231.151:3306/cursodb --username=curso --password=curso  --hive-database username_cursodb --create-hive-table --hive-import -m 1
 
-sqoop import-all-tables --connect jdbc:mysql://34.236.231.151:3306/retail_db --username=retail_dba --password=retail_dba --hive-database mydbhive --create-hive-table --warehouse-dir=/tmp/mysqlOut1 --hive-import --mysql-delimiters -m 1 
+SEGUNDA VEZ O INCREMENTAL (ya tabla creada):
 
-sqoop import-all-tables --connect jdbc:mysql://34.236.231.151:3306/retail_db --username=retail_dba --password=retail_dba --hive-database mydbhive --hive-overwrite --warehouse-dir=/tmp/mysqlOut1 --hive-import --mysql-delimiters -m 1 
+$ sqoop import-all-tables --connect jdbc:mysql://34.236.231.151:3306/cursodb --username=curso --password=curso  --hive-database username_cursodb --hive-import --hive-overwrite -m 1
+
 ```
-
 
 // Poblar o llenar la tabla Hive Manualmente:
 ```
 $ beeline
-> use username;
+> use usernamedb;
 > CREATE TABLE username_emps (empid INT, name  STRING, salary INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  LINES TERMINATED BY '\n' STORED AS TEXTFILE;
 >
 ```
 // Cargar datos a Hive Manualmente:
 ```
-> load data inpath '/user/username/mysqlOut/part-m-00000' into table database.username_emps;
+> load data inpath '/user/username/employee/part-m-00000' into table usernamedb.username_emps;
 OK                          
 > select * from username_emps;
 OK
@@ -294,7 +300,7 @@ $ sqoop export --connect jdbc:mysql://34.236.231.151:3306/cursodb --username cur
 
     # crear la tabla externa:
 
-    use mydbhive;
+    use usernamedb;
 
     create external table employee (emp_id int, name string, salary float) 
     ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  

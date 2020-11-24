@@ -22,16 +22,27 @@ Password: retail_dba
 
 -- crear la base de datos retail_db
 
-por beeline o por interfaz web (HUE:8888 o DSA:30800):
+** por interfaz web (HUE:8888 o DSA:30800):
 
     DROP DATABASE IF EXISTS username_retail_db CASCADE;
     CREATE DATABASE IF NOT EXISTS username_retail_db;
 
 
-
 # conectarse al nodo master:
 ## si es en AWS EMR, en la consola de administración aparece el archivo clave y el hostname
 # si es en AWS EMR con el usuario 'hadoop', usuario por defecto
+
+** importar datos via sqoop por Terminal:
+
+-- la primera vez para crear las tablas e importar
+
+$ sqoop import-all-tables --connect jdbc:mysql://34.236.231.151:3306/retail_db --username retail_dba --password retail_dba --hive-database username_retail_db --create-hive-table --hive-import
+
+-- despues de la primera vez, para importar nuevos datos y sobre escribir:
+$ sqoop import-all-tables --connect jdbc:mysql://34.236.231.151:3306/retail_db --username retail_dba --password retail_dba --hive-database username_retail_db --hive-import --hive-overwrite
+
+
+
 #
 ## si es en el DCA:
 ###     $ ssh username@192.168.10.116 -p 2222     (conectandose previamente a la VPN)
@@ -40,26 +51,16 @@ por beeline o por interfaz web (HUE:8888 o DSA:30800):
 ##                              password: hive
 
 
--- importar datos via sqoop por Terminal:
+** importar datos via sqoop por Terminal:
 
-$ hdfs dfs -rm -R /tmp/username_retail_db/*
+-- la primera vez para crear las tablas e importar
 
-# una solo linea:
-$ sqoop import-all-tables --connect jdbc:mysql://192.168.10.116:3306/retail_db --username=retail_dba --password retail_dba --hive-database username_retail_db --create-hive-table --hive-import  --hive-overwrite --warehouse-dir=/tmp/username_retail_db -m 1 --mysql-delimiters
+$ sqoop import-all-tables --connect jdbc:mysql://192.168.10.116:3306/retail_db --username retail_dba --password retail_dba --hive-database username_retail_db --create-hive-table --hive-import
 
-$ sqoop import-all-tables --connect jdbc:mysql://192.168.10.116:3306/retail_db \
-    --username=retail_dba \
-    --password retail_dba \
-    --hive-database username_retail_db \
-    --create-hive-table \
-    --hive-import \
-    --hive-overwrite \
-    --warehouse-dir=/tmp/username_retail_db \
-    -m 1 --mysql-delimiters
+-- despues de la primera vez, para importar nuevos datos y sobre escribir:
+$ sqoop import-all-tables --connect jdbc:mysql://192.168.10.116:3306/retail_db --username retail_dba --password retail_dba --hive-database username_retail_db --hive-import --hive-overwrite
 
--- importar datos via sqoop por HUE (NO COLOCA LA PALABRA 'sqoop') - via web no corre en el DCA.
-
-import-all-tables --connect jdbc:mysql://192.168.10.116:3306/retail_db --username=retail_dba --password retail_dba --hive-database username_retail_db --create-hive-table --hive-import --hive-overwrite --warehouse-dir=/tmp/username_retail_db -m 1 --mysql-delimiters
+-- importar datos via sqoop por HUE (NO COLOCA LA PALABRA 'sqoop' y utilice los mismos comandos anteriores) - via web no corre en el DCA.
 
 -- CATEGORIAS MÁS POPULARES DE PRODUCTOS (via HUE o DSA)
 
@@ -85,53 +86,4 @@ and o.order_status <> 'SUSPECTED_FRAUD'
 group by order_item_product_id) r
 on p.product_id = r.order_item_product_id
 order by r.revenue desc
-limit 10
-
--- SUBIR LOS LOGS AL HDFS:
-$ hdfs dfs -put $HOME/datasets/retail_logs/access.log /user/username/datasets/retail_logs/
-
-USE username_retail_db;
-CREATE EXTERNAL TABLE tmp_access_logs (
-        ip STRING,
-        fecha STRING,
-        method STRING,
-        url STRING,
-        http_version STRING,
-        code1 STRING,
-        code2 STRING,
-        dash STRING,
-        user_agent STRING)
-    ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.RegexSerDe'
-    WITH SERDEPROPERTIES (
-        'input.regex' = '([^ ]*) - - \\[([^\\]]*)\\] "([^\ ]*) ([^\ ]*) ([^\ ]*)" (\\d*) (\\d*) "([^"]*)" "([^"]*)"',
-        'output.format.string' = "%1$$s %2$$s %3$$s %4$$s %5$$s %6$$s %7$$s %8$$s %9$$s")
-    LOCATION '/user/username/datasets/retail_logs/';
-
--- CREAR DIRECTORIO PARA TABLA EXTERNA CON ETL
-
-$ hdfs dfs -mkdir /user/username/warehouse/access_logs_etl
-
-USE username_retail_db;
-CREATE EXTERNAL TABLE etl_access_logs (
-        ip STRING,
-        fecha STRING,
-        method STRING,
-        url STRING,
-        http_version STRING,
-        code1 STRING,
-        code2 STRING,
-        dash STRING,
-        user_agent STRING)
-    ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
-    LOCATION '/user/username/warehouse/access_logs_etl/';
-
-
-ADD JAR /usr/lib/hive/lib/hive-contrib.jar;
-
-INSERT OVERWRITE TABLE etl_access_logs SELECT * FROM tmp_access_logs;
-
---- MUESTRE LOS PRODUCTOS MÁS VISITADOS
-
-SELECT count(*) as contador,url FROM etl_access_logs
-WHERE url LIKE '%\/product\/%'
-GROUP BY url ORDER BY contador DESC LIMIT 10;
+limit 10;
