@@ -44,12 +44,12 @@ Web de Hive:
 
 ### cada uno deberá crear su propia BD:
 
-    CREATE DATABASE mybd
+    CREATE DATABASE usernamedb
 
 ### Crear la tabla HDI en Hive:
 ```
 # tabla manejada por hive: /user/hive/warehouse
-use mydb;
+use usernamedb;
 CREATE TABLE HDI (id INT, country STRING, hdi FLOAT, lifeex INT, mysch INT, eysch INT, gni INT) 
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 STORED AS TEXTFILE
@@ -69,14 +69,14 @@ $ hdfs dfs -cp hdfs:///user/username/datasets/onu/hdi-data.csv hdfs:///warehouse
 $ load data inpath '/user/username/datasets/onu/hdi-data.csv' into table HDI
 
 # tabla externa en hdfs: 
-use mydb;
+use usernamedb;
 CREATE EXTERNAL TABLE HDI (id INT, country STRING, hdi FLOAT, lifeex INT, mysch INT, eysch INT, gni INT) 
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' 
 STORED AS TEXTFILE 
 LOCATION '/user/username/datasets/onu/hdi/'
 
 # tabla externa en S3: 
-use mydb;
+use usernamedb;
 CREATE EXTERNAL TABLE HDI (id INT, country STRING, hdi FLOAT, lifeex INT, mysch INT, eysch INT, gni INT) 
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' 
 STORED AS TEXTFILE 
@@ -86,7 +86,7 @@ LOCATION 's3://<bucketname>/datasets/onu/hdi/'
 
 Nota: Esta tabla la crea en una BASE DE DATOS 'mydb'
 ```
-use mydb;
+use usernamedb;
 show tables;
 describe hdi;
 ```
@@ -107,7 +107,7 @@ usar los datos en 'datasets' de este repositorio.
 ### Iniciar hive y crear la tabla EXPO:
 
 ```
-use mydb;
+use usernamedb;
 CREATE EXTERNAL TABLE EXPO (country STRING, expct FLOAT) 
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' 
 STORED AS TEXTFILE 
@@ -122,7 +122,7 @@ SELECT h.country, gni, expct FROM HDI h JOIN EXPO e ON (h.country = e.country) W
 
 ## 4. WORDCOUNT EN HIVE:
 ```
-use <MYDB>;
+use usernamedb;
 CREATE EXTERNAL TABLE docs (line STRING) 
 STORED AS TEXTFILE 
 LOCATION 'hdfs://localhost/user/username/datasets/gutenberg-small/';
