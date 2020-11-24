@@ -55,10 +55,10 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 STORED AS TEXTFILE
 
 # se requiere cargar datos a la tabla asi:
-#<>
+# 
 # copiando datos directamente hacia hdfs:///warehouse/tablespace/managed/hive/mydb.db/hdi
 
-$ hdfs dfs -cp hdfs:///user/username/datasets/onu/hdi-data.csv hdfs:///warehouse/tablespace/managed/hive/mydb.db/hdi
+$ hdfs dfs -cp hdfs:///user/username/datasets/onu/hdi-data.csv hdfs:///warehouse/tablespace/managed/hive/usernamedb.db/hdi
 
 #
 # cargardo datos desde hive:
