@@ -220,7 +220,7 @@ $ hdfs dfs -cat /user/username/cursodb/employee/part-m-00000
 $ sqoop create-hive-table --connect jdbc:mysql://34.236.231.151:3306/cursodb --username curso --password curso --table employee --hive-database username_cursodb --hive-table employee
 ```
 
-// Transferir UNA TABLA de una base de datos (tipo mysql) hacia HIVE vía HDFS:
+// Transferir UNA TABLA de una base de datos (tipo mysql) hacia HIVE:
 
 ```
 $ sqoop import --connect jdbc:mysql://34.236.231.151:3306/cursodb --username curso --password curso --table employee --hive-database username_cursodb --hive-import  --hive-table employee --hive-overwrite -m 1
